@@ -131,4 +131,16 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <repository>
+            <id>netradius-releases</id>
+            <name>Netradius Release Repository</name>
+            <url>https://nexus.netradius.net/repository/netradius-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>netradius-snapshots</id>
+            <name>Netradius Snapshots Repository</name>
+            <url>https://nexus.netradius.net/repository/netradius-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
