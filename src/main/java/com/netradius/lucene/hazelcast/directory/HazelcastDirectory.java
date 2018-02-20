@@ -47,6 +47,17 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
     this.store = instance.getMap("hazelcastDirectory");
   }
 
+  public HazelcastDirectory(LockFactory lockFactory, Config config) {
+    super(lockFactory);
+    // serialization
+    config.getSerializationConfig().addDataSerializableFactory(
+        HazelcastDataSerializableFactory.FACTORY_ID,
+        new HazelcastDataSerializableFactory());
+
+    HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
+    this.store = instance.getMap(config.getInstanceName());
+  }
+
   @Override
   public String[] listAll() throws IOException {
     String[] files = new String[store.size()];
