@@ -1,6 +1,10 @@
 package com.netradius.lucene.hazelcast.directoryprovider;
 
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.core.HazelcastInstance;
 import com.netradius.lucene.hazelcast.directory.HazelcastDirectory;
+import com.netradius.lucene.hazelcast.serializer.HazelcastDataSerializableFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.store.LockFactory;
 import org.hibernate.search.engine.service.spi.ServiceManager;
@@ -21,6 +25,7 @@ import java.util.Properties;
 @Slf4j
 public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDirectory> {
 
+  protected HazelcastInstance hazelcastInstance;
   private HazelcastDirectory directory;
   private String indexName;
   private Properties properties;
@@ -32,16 +37,32 @@ public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDi
   public void initialize(String directoryProviderName,
                          Properties properties,
                          BuildContext buildContext) {
+
     this.indexName = directoryProviderName;
     this.properties = properties;
     this.serviceManager = buildContext.getServiceManager();
+
+    String groupName = properties.getProperty("hazelcast_group_name");
+    String groupPassword = properties.getProperty("hazelcast_group_password");
+    String address = properties.getProperty("hazelcast_address");
+
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.getNetworkConfig().getAddresses().add(address);
+    clientConfig.getGroupConfig().setName(groupName);
+    clientConfig.getGroupConfig().setPassword(groupPassword);
+
+    clientConfig.getSerializationConfig().addDataSerializableFactory(
+        HazelcastDataSerializableFactory.FACTORY_ID,
+        new HazelcastDataSerializableFactory());
+
+    this.hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
   }
 
   public void start(DirectoryBasedIndexManager directoryBasedIndexManager) {
     try {
       LockFactory lockFactory = serviceManager.requestService(LockFactoryCreator.class)
           .createLockFactory(null, properties);
-      this.directory = new HazelcastDirectory(lockFactory);
+      this.directory = new HazelcastDirectory(hazelcastInstance, lockFactory);
       this.properties = null;
       DirectoryHelper.initializeIndexIfNeeded(this.directory);
     } finally {

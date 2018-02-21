@@ -26,36 +26,15 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class HazelcastDirectory extends BaseDirectory implements Accountable {
 
+  protected HazelcastInstance hazelcastInstance;
   public static final int BUFFER_SIZE = 1024;
   protected final AtomicLong sizeInBytes = new AtomicLong();
   IMap<String, HFile> store;
 
-  public HazelcastDirectory() {
-    this(new SingleInstanceLockFactory());
-  }
-
-  public HazelcastDirectory(LockFactory lockFactory) {
+  public HazelcastDirectory(HazelcastInstance hazelcastInstance, LockFactory lockFactory) {
     super(lockFactory);
-    Config config = new Config();
-
-    // serialization
-    config.getSerializationConfig().addDataSerializableFactory(
-        HazelcastDataSerializableFactory.FACTORY_ID,
-        new HazelcastDataSerializableFactory());
-
-    HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
-    this.store = instance.getMap("hazelcastDirectory");
-  }
-
-  public HazelcastDirectory(LockFactory lockFactory, Config config) {
-    super(lockFactory);
-    // serialization
-    config.getSerializationConfig().addDataSerializableFactory(
-        HazelcastDataSerializableFactory.FACTORY_ID,
-        new HazelcastDataSerializableFactory());
-
-    HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
-    this.store = instance.getMap(config.getInstanceName());
+    this.hazelcastInstance = hazelcastInstance;
+    this.store = hazelcastInstance.getMap("hazelcastDirectory");
   }
 
   @Override

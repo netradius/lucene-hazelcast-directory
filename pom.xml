@@ -22,7 +22,7 @@
         <checkstyle-config.version>0.0.2</checkstyle-config.version>
         <checkstyle-puppycrawl-config.version>8.1</checkstyle-puppycrawl-config.version>
         <commons-logging.version>1.1.1</commons-logging.version>
-        <hazelcast.version>3.9.2</hazelcast.version>
+        <hazelcast.version>3.9.3</hazelcast.version>
         <hibernate-search.version>5.5.4.Final</hibernate-search.version>
         <junit.version>4.12</junit.version>
         <logback-classic.version>1.2.3</logback-classic.version>
@@ -39,7 +39,7 @@
         </dependency>
         <dependency>
             <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
+            <artifactId>hazelcast-client</artifactId>
             <version>${hazelcast.version}</version>
         </dependency>
         <dependency>
