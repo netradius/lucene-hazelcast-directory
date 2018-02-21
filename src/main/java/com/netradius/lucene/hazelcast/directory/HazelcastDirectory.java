@@ -73,7 +73,6 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
   @Override
   public void close() throws IOException {
     isOpen = false;
-    store.clear();
   }
 
   @Override
