@@ -18,7 +18,7 @@ import java.util.Collections;
  */
 public class HFile implements Accountable, IdentifiedDataSerializable {
 
-  protected ArrayList<byte[]> buffers = new ArrayList<byte[]>();
+  protected ArrayList<byte[]> buffers = new ArrayList<>();
   protected long sizeInBytes;
   long length;
   HazelcastDirectory directory;

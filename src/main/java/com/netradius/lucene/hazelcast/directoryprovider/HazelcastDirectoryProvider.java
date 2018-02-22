@@ -26,25 +26,27 @@ import java.util.Properties;
 public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDirectory> {
 
   protected HazelcastInstance hazelcastInstance;
-  private HazelcastDirectory directory;
-  private String indexName;
-  private Properties properties;
-  private ServiceManager serviceManager;
+  protected String prefix;
+  protected HazelcastDirectory directory;
+  protected String indexName;
+  protected Properties properties;
+  protected ServiceManager serviceManager;
 
   public HazelcastDirectoryProvider() {
   }
 
-  public void initialize(String directoryProviderName,
+  public void initialize(String indexName,
                          Properties properties,
                          BuildContext buildContext) {
 
-    this.indexName = directoryProviderName;
+    this.indexName = indexName;
     this.properties = properties;
     this.serviceManager = buildContext.getServiceManager();
 
     String groupName = properties.getProperty("hazelcast_group_name");
     String groupPassword = properties.getProperty("hazelcast_group_password");
     String address = properties.getProperty("hazelcast_address");
+    this.prefix = properties.getProperty("hazelcast_prefix");
 
     ClientConfig clientConfig = new ClientConfig();
     clientConfig.getNetworkConfig().getAddresses().add(address);
@@ -62,7 +64,8 @@ public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDi
     try {
       LockFactory lockFactory = serviceManager.requestService(LockFactoryCreator.class)
           .createLockFactory(null, properties);
-      this.directory = new HazelcastDirectory(hazelcastInstance, lockFactory);
+      this.directory = new HazelcastDirectory(hazelcastInstance,
+          (prefix == null ? "" : prefix) + indexName, lockFactory);
       this.properties = null;
       DirectoryHelper.initializeIndexIfNeeded(this.directory);
     } finally {

@@ -1,16 +1,13 @@
 package com.netradius.lucene.hazelcast.directory;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.netradius.lucene.hazelcast.serializer.HazelcastDataSerializableFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.store.BaseDirectory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
-import org.apache.lucene.store.SingleInstanceLockFactory;
 import org.apache.lucene.util.Accountable;
 import org.apache.lucene.util.Accountables;
 
@@ -24,33 +21,33 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Dilip S Sisodia
  */
+@Slf4j
 public class HazelcastDirectory extends BaseDirectory implements Accountable {
 
   protected HazelcastInstance hazelcastInstance;
-  public static final int BUFFER_SIZE = 1024;
   protected final AtomicLong sizeInBytes = new AtomicLong();
-  IMap<String, HFile> store;
+  protected IMap<String, HFile> store;
 
-  public HazelcastDirectory(HazelcastInstance hazelcastInstance, LockFactory lockFactory) {
+  public HazelcastDirectory(HazelcastInstance hazelcastInstance,
+      String indexName, LockFactory lockFactory) {
     super(lockFactory);
     this.hazelcastInstance = hazelcastInstance;
-    this.store = hazelcastInstance.getMap("hazelcastDirectory");
+    this.store = hazelcastInstance.getMap(indexName);
   }
 
   @Override
   public String[] listAll() throws IOException {
-    String[] files = new String[store.size()];
-    int index = 0;
-
-    for (String file : store.keySet()) {
-      files[index++] = file;
+    if (log.isTraceEnabled()) {
+      log.trace("listAll()");
     }
-
-    return files;
+    return store.keySet().toArray(new String[store.size()]);
   }
 
   @Override
   public void deleteFile(final String name) throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("deleteFile(" + name + ")");
+    }
     ensureOpen();
     HFile file = store.remove(name);
     if (file != null) {
@@ -62,21 +59,34 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
 
   @Override
   public long fileLength(final String name) throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("fileLength(" + name + ")");
+    }
     ensureOpen();
     if (!store.containsKey(name)) {
       throw new FileNotFoundException(name);
     }
-    return store.get(name).getLength();
+    HFile file = store.get(name);
+    if (file != null) {
+      return file.getLength();
+    }
+    throw new FileNotFoundException(name);
   }
 
 
   @Override
   public void close() throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("close()");
+    }
     isOpen = false;
   }
 
   @Override
   public IndexOutput createOutput(String s, IOContext ioContext) throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("createOutout(" + s + "," + ioContext.toString() + ")");
+    }
     ensureOpen();
     HFile file = new HFile(this);
     store.put(s, file);
@@ -85,10 +95,16 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
 
   @Override
   public void sync(Collection<String> names) throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("sync(" + names.toString() + ")");
+    }
   }
 
   @Override
   public void renameFile(String source, String dest) throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("renameFile(" + source + "," + dest + ")");
+    }
     ensureOpen();
     HFile file = this.store.get(source);
     if (file == null) {
@@ -101,6 +117,9 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
 
   @Override
   public IndexInput openInput(String s, IOContext ioContext) throws IOException {
+    if (log.isTraceEnabled()) {
+      log.trace("openInput(" + s + "," + ioContext.toString() + ")");
+    }
     ensureOpen();
     if (!store.containsKey(s)) {
       throw new FileNotFoundException(s);
@@ -110,12 +129,18 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
 
   @Override
   public long ramBytesUsed() {
+    if (log.isTraceEnabled()) {
+      log.trace("ramBytesUsed()");
+    }
     ensureOpen();
     return sizeInBytes.get();
   }
 
   @Override
   public Collection<Accountable> getChildResources() {
+    if (log.isTraceEnabled()) {
+      log.trace("getChildResources()");
+    }
     return Accountables.namedAccountables("file", this.store);
   }
 }
