@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Hazelcast directory implementation.
  *
  * @author Dilip S Sisodia
+ * @author Erik R. Jensen
  */
 @Slf4j
 public class HazelcastDirectory extends BaseDirectory implements Accountable {
@@ -28,11 +29,11 @@ public class HazelcastDirectory extends BaseDirectory implements Accountable {
   protected final AtomicLong sizeInBytes = new AtomicLong();
   protected IMap<String, HFile> store;
 
-  public HazelcastDirectory(HazelcastInstance hazelcastInstance,
+  public HazelcastDirectory(HazelcastInstance hazelcastInstance, String prefix,
       String indexName, LockFactory lockFactory) {
     super(lockFactory);
     this.hazelcastInstance = hazelcastInstance;
-    this.store = hazelcastInstance.getMap(indexName);
+    this.store = hazelcastInstance.getMap(prefix != null ? prefix : "" + indexName);
   }
 
   @Override

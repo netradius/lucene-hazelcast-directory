@@ -15,16 +15,16 @@ import java.util.Collections;
  * Holds details for a file in HazelcastDirectory.
  *
  * @author Dilip S Sisodia
+ * @author Erik R. Jensen
  */
 public class HFile implements Accountable, IdentifiedDataSerializable {
 
   protected ArrayList<byte[]> buffers = new ArrayList<>();
   protected long sizeInBytes;
-  long length;
-  HazelcastDirectory directory;
+  protected long length;
+  protected HazelcastDirectory directory;
 
-  public HFile() {
-  }
+  public HFile() {}
 
   public HFile(HazelcastDirectory directory) {
     this.directory = directory;

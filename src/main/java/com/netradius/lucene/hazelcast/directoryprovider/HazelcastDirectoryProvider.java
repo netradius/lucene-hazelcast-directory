@@ -32,9 +32,6 @@ public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDi
   protected Properties properties;
   protected ServiceManager serviceManager;
 
-  public HazelcastDirectoryProvider() {
-  }
-
   public void initialize(String indexName,
                          Properties properties,
                          BuildContext buildContext) {
@@ -64,8 +61,7 @@ public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDi
     try {
       LockFactory lockFactory = serviceManager.requestService(LockFactoryCreator.class)
           .createLockFactory(null, properties);
-      this.directory = new HazelcastDirectory(hazelcastInstance,
-          (prefix == null ? "" : prefix) + indexName, lockFactory);
+      this.directory = new HazelcastDirectory(hazelcastInstance, prefix, indexName, lockFactory);
       this.properties = null;
       DirectoryHelper.initializeIndexIfNeeded(this.directory);
     } finally {
