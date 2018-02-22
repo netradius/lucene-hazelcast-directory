@@ -43,10 +43,10 @@ public class HazelcastDirectoryProvider implements DirectoryProvider<HazelcastDi
     this.properties = properties;
     this.serviceManager = buildContext.getServiceManager();
 
+    this.prefix = properties.getProperty("hazelcast_prefix");
     String groupName = properties.getProperty("hazelcast_group_name");
     String groupPassword = properties.getProperty("hazelcast_group_password");
     String address = properties.getProperty("hazelcast_address");
-    this.prefix = properties.getProperty("hazelcast_prefix");
 
     ClientConfig clientConfig = new ClientConfig();
     clientConfig.getNetworkConfig().getAddresses().add(address);
